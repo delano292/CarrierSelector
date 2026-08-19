@@ -6,6 +6,7 @@ use App\Models\Carrier;
 use App\Models\PackageType;
 use App\Models\Region;
 use App\Models\ShippingRate;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -88,5 +89,36 @@ class ShippingRateTest extends TestCase
         $this->assertDatabaseHas('shipping_rates', ['id' => $rate->id]);
         $this->assertDatabaseHas('carriers', ['id' => $carrierId, 'name' => 'PostNL']);
         $this->assertNotNull(Carrier::withTrashed()->find($carrierId)->deleted_at);
+    }
+
+    public function test_it_rejects_a_duplicate_carrier_package_type_region_combination(): void
+    {
+        $rate = $this->makeShippingRate();
+
+        $this->expectException(QueryException::class);
+
+        ShippingRate::create([
+            'carrier_id' => $rate->carrier_id,
+            'package_type_id' => $rate->package_type_id,
+            'region_id' => $rate->region_id,
+            'weekend' => true,
+            'price' => 9.95,
+        ]);
+    }
+
+    public function test_it_allows_recreating_the_combination_after_a_soft_delete(): void
+    {
+        $rate = $this->makeShippingRate();
+        $rate->delete();
+
+        $replacement = ShippingRate::create([
+            'carrier_id' => $rate->carrier_id,
+            'package_type_id' => $rate->package_type_id,
+            'region_id' => $rate->region_id,
+            'weekend' => true,
+            'price' => 9.95,
+        ]);
+
+        $this->assertDatabaseHas('shipping_rates', ['id' => $replacement->id, 'price' => 9.95]);
     }
 }

@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -22,6 +23,14 @@ return new class extends Migration
             $table->softDeletes();
             $table->index(['region_id', 'package_type_id', 'weekend']);
         });
+
+        // Partial unique index (rather than Blueprint::unique()) so a soft-deleted rate
+        // doesn't block re-creating the same carrier/package type/region combination.
+        DB::statement(<<<'SQL'
+            CREATE UNIQUE INDEX shipping_rates_carrier_package_type_region_unique
+            ON shipping_rates (carrier_id, package_type_id, region_id)
+            WHERE deleted_at IS NULL
+        SQL);
     }
 
     /**
