@@ -1,0 +1,50 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: CarrierSelector-app
+    ports:
+      - "8000:8000"
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: CarrierSelector
+      DB_USERNAME: CarrierSelector
+      DB_PASSWORD: CarrierSelector
+    depends_on:
+      - postgres
+      - postgres_test
+    volumes:
+      - ./app:/var/www/html
+
+  postgres:
+    image: postgres:16
+    container_name: CarrierSelector-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: CarrierSelector
+      POSTGRES_USER: CarrierSelector
+      POSTGRES_PASSWORD: CarrierSelector
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  postgres_test:
+    image: postgres:16
+    container_name: CarrierSelector-postgres-test
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: CarrierSelector-testing
+      POSTGRES_USER: CarrierSelector
+      POSTGRES_PASSWORD: CarrierSelector
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+  postgres_test_data:
