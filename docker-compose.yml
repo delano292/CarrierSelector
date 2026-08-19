@@ -11,6 +11,7 @@ services:
       - postgres_test
     volumes:
       - ./app:/var/www/html
+      - app_vendor:/var/www/html/vendor
 
   postgres:
     image: postgres:16
@@ -41,3 +42,4 @@ services:
 volumes:
   postgres_data:
   postgres_test_data:
+  app_vendor:
