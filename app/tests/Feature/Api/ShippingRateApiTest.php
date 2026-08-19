@@ -110,6 +110,36 @@ class ShippingRateApiTest extends TestCase
         $response->assertJsonFragment(['carrier' => 'DPD', 'price' => '12.75']);
     }
 
+    public function test_it_accepts_eu_directly_as_a_country(): void
+    {
+        $response = $this->getJson('/api/shipping-rates?'.http_build_query([
+            'country' => 'EU',
+            'shipment_date' => '2026-08-24',
+            'package_type' => 'Standard',
+        ]));
+
+        $response->assertOk();
+        $response->assertJsonCount(3, 'data');
+        $response->assertJsonFragment(['carrier' => 'PostNL', 'price' => '10.95']);
+        $response->assertJsonFragment(['carrier' => 'DHL', 'price' => '10.45']);
+        $response->assertJsonFragment(['carrier' => 'DPD', 'price' => '10.75']);
+    }
+
+    public function test_it_accepts_row_directly_as_a_country(): void
+    {
+        $response = $this->getJson('/api/shipping-rates?'.http_build_query([
+            'country' => 'ROW',
+            'shipment_date' => '2026-08-24',
+            'package_type' => 'Standard',
+        ]));
+
+        $response->assertOk();
+        $response->assertJsonCount(3, 'data');
+        $response->assertJsonFragment(['carrier' => 'PostNL', 'price' => '13.95']);
+        $response->assertJsonFragment(['carrier' => 'DHL', 'price' => '12.45']);
+        $response->assertJsonFragment(['carrier' => 'DPD', 'price' => '12.75']);
+    }
+
     public function test_it_returns_an_empty_list_when_nothing_matches(): void
     {
         // Rest of World has no weekend-capable carriers for Standard.

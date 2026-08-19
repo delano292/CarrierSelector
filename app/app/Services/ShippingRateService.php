@@ -54,7 +54,7 @@ class ShippingRateService
     {
         return match (true) {
             in_array($country, ['NL', 'BE'], true) => $country,
-            in_array($country, self::EU_COUNTRY_CODES, true) => 'EU',
+            $country === 'EU' || in_array($country, self::EU_COUNTRY_CODES, true) => 'EU',
             default => 'ROW',
         };
     }

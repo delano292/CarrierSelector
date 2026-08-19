@@ -24,7 +24,7 @@ class GetShippingRatesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'country' => ['nullable', 'string', 'regex:/^[A-Z]{2}$/'],
+            'country' => ['nullable', 'string', 'regex:/^(?:[A-Z]{2}|ROW)$/'],
             'shipment_date' => ['nullable', 'date_format:Y-m-d'],
             'package_type' => ['nullable', 'string', 'exists:package_types,name'],
         ];
