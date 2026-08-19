@@ -78,13 +78,15 @@ class ShippingRateTest extends TestCase
         $this->assertInstanceOf(Region::class, $rate->region);
     }
 
-    public function test_it_is_deleted_when_its_carrier_is_deleted(): void
+    public function test_it_survives_a_soft_deleted_carrier(): void
     {
         $rate = $this->makeShippingRate();
         $carrierId = $rate->carrier_id;
 
         Carrier::find($carrierId)->delete();
 
-        $this->assertDatabaseMissing('shipping_rates', ['id' => $rate->id]);
+        $this->assertDatabaseHas('shipping_rates', ['id' => $rate->id]);
+        $this->assertDatabaseHas('carriers', ['id' => $carrierId, 'name' => 'PostNL']);
+        $this->assertNotNull(Carrier::withTrashed()->find($carrierId)->deleted_at);
     }
 }
