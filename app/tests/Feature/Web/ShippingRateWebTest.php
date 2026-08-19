@@ -30,11 +30,19 @@ class ShippingRateWebTest extends TestCase
         $response->assertJsonFragment(['carrier' => 'PostNL', 'price' => '6.95']);
     }
 
-    public function test_it_validates_the_same_way_as_the_api_route(): void
+    public function test_it_allows_all_parameters_to_be_omitted(): void
     {
         $response = $this->getJson('/shipping-rates');
 
+        $response->assertOk();
+        $response->assertJsonPath('meta.total', 25);
+    }
+
+    public function test_it_validates_the_same_way_as_the_api_route(): void
+    {
+        $response = $this->getJson('/shipping-rates?'.http_build_query(['country' => 'Netherlands']));
+
         $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['country', 'shipment_date', 'package_type']);
+        $response->assertJsonValidationErrors(['country']);
     }
 }

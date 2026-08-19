@@ -24,23 +24,25 @@ class GetShippingRatesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'country' => ['required', 'string', 'regex:/^[A-Z]{2}$/'],
-            'shipment_date' => ['required', 'date_format:Y-m-d'],
-            'package_type' => ['required', 'string', 'exists:package_types,name'],
+            'country' => ['nullable', 'string', 'regex:/^[A-Z]{2}$/'],
+            'shipment_date' => ['nullable', 'date_format:Y-m-d'],
+            'package_type' => ['nullable', 'string', 'exists:package_types,name'],
         ];
     }
 
-    public function country(): string
+    public function country(): ?string
     {
         return $this->validated('country');
     }
 
-    public function shipmentDate(): CarbonImmutable
+    public function shipmentDate(): ?CarbonImmutable
     {
-        return CarbonImmutable::createFromFormat('Y-m-d', $this->validated('shipment_date'));
+        $shipmentDate = $this->validated('shipment_date');
+
+        return $shipmentDate ? CarbonImmutable::createFromFormat('Y-m-d', $shipmentDate) : null;
     }
 
-    public function packageType(): string
+    public function packageType(): ?string
     {
         return $this->validated('package_type');
     }

@@ -123,12 +123,45 @@ class ShippingRateApiTest extends TestCase
         $response->assertJsonCount(0, 'data');
     }
 
-    public function test_it_requires_country_shipment_date_and_package_type(): void
+    public function test_country_shipment_date_and_package_type_are_all_optional(): void
     {
+        // No filters at all: every seeded rate, cheapest first, 20 per page.
         $response = $this->getJson('/api/shipping-rates');
 
-        $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['country', 'shipment_date', 'package_type']);
+        $response->assertOk();
+        $response->assertJsonCount(20, 'data');
+        $response->assertJsonPath('meta.total', 25);
+        $response->assertJsonPath('data.0.price', '3.95');
+    }
+
+    public function test_it_filters_by_country_alone(): void
+    {
+        $response = $this->getJson('/api/shipping-rates?'.http_build_query(['country' => 'NL']));
+
+        $response->assertOk();
+        $response->assertJsonCount(9, 'data');
+        $response->assertJsonFragment(['carrier' => 'PostNL', 'price' => '26.95']);
+        $response->assertJsonMissing(['price' => '10.95']);
+    }
+
+    public function test_it_filters_by_package_type_alone(): void
+    {
+        $response = $this->getJson('/api/shipping-rates?'.http_build_query(['package_type' => 'Pallet']));
+
+        $response->assertOk();
+        $response->assertJsonCount(3, 'data');
+        $response->assertJsonPath('data.0.price', '21.75');
+        $response->assertJsonPath('data.1.price', '23.75');
+        $response->assertJsonPath('data.2.price', '26.95');
+    }
+
+    public function test_it_filters_by_shipment_date_alone(): void
+    {
+        // 2026-08-22 is a Saturday: only weekend-capable rates across every region/package type.
+        $response = $this->getJson('/api/shipping-rates?'.http_build_query(['shipment_date' => '2026-08-22']));
+
+        $response->assertOk();
+        $response->assertJsonCount(13, 'data');
     }
 
     public function test_it_rejects_a_country_that_is_not_a_two_letter_code(): void

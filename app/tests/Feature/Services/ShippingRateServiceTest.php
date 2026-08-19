@@ -154,4 +154,40 @@ class ShippingRateServiceTest extends TestCase
         $this->assertCount(20, $firstPage);
         $this->assertSame(1.0, (float) $firstPage->first()->price);
     }
+
+    public function test_it_returns_every_rate_when_no_filters_are_given(): void
+    {
+        $nl = $this->rateFor('NL', false, 5.00);
+        $eu = $this->rateFor('EU', false, 9.00);
+
+        $results = $this->service->getShippingRates(null, null, null);
+
+        $this->assertTrue($results->contains($nl));
+        $this->assertTrue($results->contains($eu));
+        $this->assertCount(2, $results);
+    }
+
+    public function test_it_filters_by_country_when_shipment_date_and_package_type_are_omitted(): void
+    {
+        $nl = $this->rateFor('NL', false, 5.00);
+        $eu = $this->rateFor('EU', false, 9.00);
+
+        $results = $this->service->getShippingRates('NL', null, null);
+
+        $this->assertTrue($results->contains($nl));
+        $this->assertFalse($results->contains($eu));
+        $this->assertCount(1, $results);
+    }
+
+    public function test_it_does_not_apply_the_weekend_rule_when_shipment_date_is_omitted(): void
+    {
+        $weekdayOnly = $this->rateFor('NL', false, 5.00, 'WeekdayOnly');
+        $weekendCapable = $this->rateFor('NL', true, 6.00, 'WeekendCapable');
+
+        $results = $this->service->getShippingRates('NL', null, 'Standard');
+
+        $this->assertTrue($results->contains($weekdayOnly));
+        $this->assertTrue($results->contains($weekendCapable));
+        $this->assertCount(2, $results);
+    }
 }

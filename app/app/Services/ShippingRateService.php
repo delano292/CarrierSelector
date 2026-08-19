@@ -22,16 +22,23 @@ class ShippingRateService
         'SI', 'ES', 'SE',
     ];
 
-    public function getShippingRates(string $country, CarbonInterface $shipmentDate, string $packageType): LengthAwarePaginator
+    public function getShippingRates(?string $country, ?CarbonInterface $shipmentDate, ?string $packageType): LengthAwarePaginator
     {
         $query = ShippingRate::query()
-            ->with('carrier')
-            ->whereHas('region', fn ($query) => $query->where('iso', $this->resolveRegionIso($country)))
-            ->whereHas('packageType', fn ($query) => $query->where('name', $packageType))
+            ->with(['carrier', 'region', 'packageType'])
             ->orderBy('price');
 
+        if ($country !== null) {
+            $regionIso = $this->resolveRegionIso($country);
+            $query->whereHas('region', fn ($query) => $query->where('iso', $regionIso));
+        }
+
+        if ($packageType !== null) {
+            $query->whereHas('packageType', fn ($query) => $query->where('name', $packageType));
+        }
+
         // Only carriers flagged for weekend delivery can serve a shipment on a Saturday or Sunday.
-        if ($shipmentDate->isWeekend()) {
+        if ($shipmentDate !== null && $shipmentDate->isWeekend()) {
             $query->where('weekend', true);
         }
 

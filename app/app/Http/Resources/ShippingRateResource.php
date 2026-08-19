@@ -16,6 +16,9 @@ class ShippingRateResource extends JsonResource
     {
         return [
             'carrier' => $this->carrier->name,
+            'region' => $this->region->name,
+            'package_type' => $this->packageType->name,
+            'weekend' => $this->weekend,
             'price' => (string) $this->price,
         ];
     }

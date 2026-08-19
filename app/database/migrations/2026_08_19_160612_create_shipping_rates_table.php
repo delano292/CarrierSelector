@@ -20,6 +20,7 @@ return new class extends Migration
             $table->decimal('price', 8, 2);
             $table->timestamps();
             $table->softDeletes();
+            $table->index(['region_id', 'package_type_id', 'weekend']);
         });
     }
 
