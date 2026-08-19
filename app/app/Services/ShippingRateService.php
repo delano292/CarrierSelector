@@ -26,16 +26,21 @@ class ShippingRateService
     {
         $query = ShippingRate::query()
             ->with(['carrier', 'region', 'packageType'])
+            // Excludes rates left behind by a soft-deleted carrier/region/package type.
+            ->whereHas('carrier')
             ->orderBy('price');
 
-        if ($country !== null) {
-            $regionIso = $this->resolveRegionIso($country);
-            $query->whereHas('region', fn ($query) => $query->where('iso', $regionIso));
-        }
+        $query->whereHas('region', function ($query) use ($country) {
+            if ($country !== null) {
+                $query->where('iso', $this->resolveRegionIso($country));
+            }
+        });
 
-        if ($packageType !== null) {
-            $query->whereHas('packageType', fn ($query) => $query->where('name', $packageType));
-        }
+        $query->whereHas('packageType', function ($query) use ($packageType) {
+            if ($packageType !== null) {
+                $query->where('name', $packageType);
+            }
+        });
 
         // Only carriers flagged for weekend delivery can serve a shipment on a Saturday or Sunday.
         if ($shipmentDate !== null && $shipmentDate->isWeekend()) {

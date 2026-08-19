@@ -190,4 +190,37 @@ class ShippingRateServiceTest extends TestCase
         $this->assertTrue($results->contains($weekendCapable));
         $this->assertCount(2, $results);
     }
+
+    public function test_it_excludes_rates_belonging_to_a_soft_deleted_carrier(): void
+    {
+        $rate = $this->rateFor('NL', false, 5.00, 'Discontinued');
+        $rate->carrier->delete();
+
+        $results = $this->service->getShippingRates('NL', null, 'Standard');
+
+        $this->assertFalse($results->contains($rate));
+        $this->assertCount(0, $results);
+    }
+
+    public function test_it_excludes_rates_belonging_to_a_soft_deleted_region(): void
+    {
+        $rate = $this->rateFor('NL', false, 5.00);
+        $rate->region->delete();
+
+        $results = $this->service->getShippingRates('NL', null, 'Standard');
+
+        $this->assertFalse($results->contains($rate));
+        $this->assertCount(0, $results);
+    }
+
+    public function test_it_excludes_rates_belonging_to_a_soft_deleted_package_type(): void
+    {
+        $rate = $this->rateFor('NL', false, 5.00);
+        $this->packageType->delete();
+
+        $results = $this->service->getShippingRates('NL', null, 'Standard');
+
+        $this->assertFalse($results->contains($rate));
+        $this->assertCount(0, $results);
+    }
 }
