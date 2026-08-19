@@ -6,13 +6,6 @@ services:
     container_name: CarrierSelector-app
     ports:
       - "8000:8000"
-    environment:
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_DATABASE: CarrierSelector
-      DB_USERNAME: CarrierSelector
-      DB_PASSWORD: CarrierSelector
     depends_on:
       - postgres
       - postgres_test
