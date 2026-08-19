@@ -14,6 +14,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 COPY app/ /var/www/html/
 
+RUN composer install --no-interaction
+
 EXPOSE 8000
 
-CMD ["sh", "-c", "composer install --no-interaction && php artisan serve --host=0.0.0.0"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0"]

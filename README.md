@@ -18,8 +18,7 @@ cp app/.env.example app/.env
 # 3. Bring up the app + two Postgres containers (dev + test)
 docker compose up -d --build
 
-# 4. Install PHP dependencies and prepare Laravel
-docker compose exec app composer install
+# 4. Prepare Laravel (PHP dependencies are installed automatically when the image is built)
 docker compose exec app php artisan key:generate
 
 # 5. Migrate + seed the sample data
